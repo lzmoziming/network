@@ -1,22 +1,43 @@
+import re
 import socket
+import re
 
 
 def service_client(new_socket):
-    request = new_socket.recv(1024)
-    print(">>>>>>>>>>>>>"*2)
-    print(request)
+    request = new_socket.recv(1024).decode('utf-8')
+    # print(">>>>>>>>>>>>>"*2)
+    # print(request)
 
-    response = "HTTP/1.1 200 OK\r\n"
-    response += "\r\n"
-    # response += "<h1>hahahaha</h1>"
-    f = open('./html/index.html', 'rb')
-    html_content = f.read()
-    f.close()
+    request_line = request.splitlines()
+    print("")
+    print(request_line)
+    print("*" * 50)
 
-    new_socket.send(response.encode("utf-8"))
-    new_socket.send(html_content)
+    ret = re.match(r"[^/]+(/[^ ]*)", request_line[0])
+    if ret:
+        file_name = ret.group(1)
+        # print("*" * 50, file_name)
+        if file_name == "/":
+            file_name = "/index.html"
 
-    new_socket.close()
+    try:
+        f = open('./html' + file_name, 'rb')
+    except:
+        response = "HTTP/1.1 404 NOT FOUND\r\n"
+        response += "\r\n"
+        response += "<h>没有你要的页面</h1>"
+        new_socket.send(response.encode("utf-8"))
+
+    else:
+        html_content = f.read()
+        f.close()
+        response = "HTTP/1.1 200 OK\r\n"
+        response += "\r\n"
+        # response += "<h1>hahahaha</h1>"
+        new_socket.send(response.encode("utf-8"))
+        new_socket.send(html_content)
+
+        new_socket.close()
 
 
 def main():
