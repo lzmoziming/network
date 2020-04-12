@@ -20,6 +20,7 @@ def main():
     tcp_server_socket.listen()
 
     while True:
+
         new_socket, client_addr = tcp_server_socket.accept()
 
         service_client(new_socket)
