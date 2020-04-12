@@ -1,6 +1,6 @@
 import re
 import socket
-
+import multiprocessing
 
 
 def service_client(new_socket):
@@ -14,6 +14,7 @@ def service_client(new_socket):
     print("*" * 50)
 
     ret = re.match(r"[^/]+(/[^ ]*)", request_line[0])
+    print(ret.group())
     if ret:
         file_name = ret.group(1)
         # print("*" * 50, file_name)
@@ -37,7 +38,7 @@ def service_client(new_socket):
         new_socket.send(response.encode("utf-8"))
         new_socket.send(html_content)
 
-        new_socket.close()
+    new_socket.close()
 
 
 def main():
@@ -50,7 +51,10 @@ def main():
     while True:
         new_socket, client_addr = tcp_server_socket.accept()
 
-        service_client(new_socket)
+        p = multiprocessing.Process(target=service_client, args=(new_socket,))
+        p.start()
+        new_socket.close()
+        # service_client(new_socket)
 
     tcp_server_socket.close()
 
